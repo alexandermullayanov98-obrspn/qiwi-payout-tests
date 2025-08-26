@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "QIWI Payout API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://edge.qiwi.com/payout/v1/persons",
+          "protocol": "https",
+          "host": [
+            "edge",
+            "qiwi",
+            "com"
+          ],
+          "path": [
+            "payout",
+            "v1",
+            "persons"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Balance > 0",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{QIWI_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "https://edge.qiwi.com/funding-sources/v2/persons/{{walletId}}/accounts",
+          "protocol": "https",
+          "host": [
+            "edge",
+            "qiwi",
+            "com"
+          ],
+          "path": [
+            "funding-sources",
+            "v2",
+            "persons",
+            "{{walletId}}",
+            "accounts"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var jsonData = pm.response.json();",
+              "pm.test('Balance is greater than 0', function () {",
+              "    pm.expect(jsonData.accounts[0].balance.amount).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Payment (1 RUB)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{QIWI_TOKEN}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"id\": \"{{timestamp}}\", \"sum\": {\"amount\": 1.0, \"currency\": \"643\"}, \"fields\": {\"account\": \"79990000000\"}}"
+        },
+        "url": {
+          "raw": "https://edge.qiwi.com/sinap/api/v2/terms/99/payments",
+          "protocol": "https",
+          "host": [
+            "edge",
+            "qiwi",
+            "com"
+          ],
+          "path": [
+            "sinap",
+            "api",
+            "v2",
+            "terms",
+            "99",
+            "payments"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Check Payment Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{QIWI_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "https://edge.qiwi.com/sinap/api/v2/payments/{{paymentId}}",
+          "protocol": "https",
+          "host": [
+            "edge",
+            "qiwi",
+            "com"
+          ],
+          "path": [
+            "sinap",
+            "api",
+            "v2",
+            "payments",
+            "{{paymentId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test('Payment executed successfully', function () {",
+              "    pm.expect(jsonData.status.value).to.eql('SUCCESS');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "QIWI_TOKEN",
+      "value": ""
+    },
+    {
+      "key": "walletId",
+      "value": ""
+    },
+    {
+      "key": "timestamp",
+      "value": ""
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    }
+  ]
+}
